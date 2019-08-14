@@ -18,18 +18,29 @@ if __name__ == '__main__':
     for cls in class_ls:
         action_folder = os.path.join(main_folder, cls)
         os.makedirs(data_folder, exist_ok=True)
+
+        # Video to json
         act_VP = VideoProcessor(action_folder)
         act_VP.run_video()
         json_path = act_VP.output_path
         coord_path = os.path.join(json_path, "coord_file")
+        os.makedirs(coord_path, exist_ok=True)
+
+        # json to (txt)coordinate
         act_JS = JsonScanner(json_path, coord_path)
         act_JS.run()
-        act_txtP = txtProcessor(coord_path, data_folder, step, frame)
-        act_txtP.run()
+
+        # (txt)coordinate to (txt)data
         txt_folder = os.path.join(data_folder, cls)
+        act_txtP = txtProcessor(coord_path, txt_folder, step, frame)
+        act_txtP.run()
         data_path = os.path.join(data_folder, "{}.txt".format(cls))
+
+        # Merge data within a class
         txtM = txtMerger(txt_folder, data_path)
         txtM.run()
+
+        # Write the label of the clas
         write_label(data_path, cnt)
         cnt += 1
     merge(data_folder)

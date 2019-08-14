@@ -27,7 +27,8 @@ class VideoProcessor(object):
                 pass
             else:
                 self.video_name = name.split('.')[0]
-                cmd = "python video_demo.py --video {} --outdir {} --save_video".format(video_path, self.buffer_path)
+                print(os.getcwd())
+                cmd = "python3 video_demo.py --video {} --outdir {} --save_video --sp".format(video_path, self.buffer_path)
                 os.system(cmd)
                 self.buffer2output()
         os.removedirs(self.buffer_path)
