@@ -29,6 +29,7 @@ if __name__ == '__main__':
     ML.run()
     merge(os.path.join(main_folder, "result", "zzz_data"))
     data_storage_path = os.path.join(main_folder, "result", "zzz_data", "all")
+    os.makedirs(data_storage_path, exist_ok=True)
     for file in data_storage_path:
         shutil.copy(file, data_path)
 
