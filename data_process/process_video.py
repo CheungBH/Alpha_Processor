@@ -1,13 +1,6 @@
 import os
 from tqdm import tqdm
 import shutil
-#
-# input_dir = "Video/test"
-# output_dir = os.path.join(input_dir, "output")
-# buffer_dir = os.path.join(input_dir, "buffer")
-# os.makedirs(output_dir, exist_ok=True)
-# os.makedirs(buffer_dir, exist_ok=True)
-input_path = ""
 
 
 class VideoProcessor(object):
@@ -30,14 +23,18 @@ class VideoProcessor(object):
     def run_video(self):
         for name in tqdm(os.listdir(self.video_path)):
             video_path = os.path.join(self.video_path, name)
-            self.video_name = name.split('.')[0]
-            cmd = "python video_demo.py --video {} --outdir {} --save_video".format(video_path, self.buffer_path)
-            os.system(cmd)
-            self.buffer2output()
-        os.remove(self.buffer_path)
+            if os.path.isdir(video_path):
+                pass
+            else:
+                self.video_name = name.split('.')[0]
+                cmd = "python video_demo.py --video {} --outdir {} --save_video".format(video_path, self.buffer_path)
+                os.system(cmd)
+                self.buffer2output()
+        os.removedirs(self.buffer_path)
 
 
 if __name__ == '__main__':
+    input_path = ''
     VP = VideoProcessor(input_path)
     VP.run_video()
 

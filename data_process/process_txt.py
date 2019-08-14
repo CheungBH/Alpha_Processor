@@ -86,9 +86,6 @@ class MergeAndLabel(object):
         except ValueError:
             pass
         self.label_num = len(self.action)
-        # os.makedirs(self.dest_folder, exist_ok=True)
-        # self.data_path = os.path.join(self.dest_folder, "data.txt")
-        # self.label_path = os.path.join(self.dest_folder, "label.txt")
         self.content = []
         self.txt_path = ''
 
