@@ -2,36 +2,37 @@ from config import config
 import os
 from data_process.process_video import VideoProcessor
 from data_process.process_json import JsonScanner
-from data_process.process_txt import txtProcessor, MergeAndLabel
+from data_process.process_txt import txtProcessor, txtMerger
 from tools.final_merge import merge
-import shutil
+from tools.label import write_label
 
 class_ls = config.class_ls
 main_folder = config.folder_path
 step = config.step
 frame = config.frame
-data_path = os.path.join("data", config.action, config.folder, "{}frames_{}timestep".format(frame, step))
+data_folder = os.path.join("data", config.action, config.folder, "{}frames_{}step".format(frame, step))
 
 
 if __name__ == '__main__':
+    cnt = 1
     for cls in class_ls:
         action_folder = os.path.join(main_folder, cls)
-        txt_path = os.path.join(action_folder, "result", cls)
-        os.makedirs(txt_path, exist_ok=True)
+        os.makedirs(data_folder, exist_ok=True)
         act_VP = VideoProcessor(action_folder)
         act_VP.run_video()
-        coord_path = os.path.join(act_VP.output_path, "coord_file")
-        act_JS = JsonScanner(act_VP.output_path, coord_path)
+        json_path = act_VP.output_path
+        coord_path = os.path.join(json_path, "coord_file")
+        act_JS = JsonScanner(json_path, coord_path)
         act_JS.run()
-        act_txtP = txtProcessor(coord_path, txt_path, step, frame)
+        act_txtP = txtProcessor(coord_path, data_folder, step, frame)
         act_txtP.run()
-    ML = MergeAndLabel(os.path.join(main_folder, "result"))
-    ML.run()
-    merge(os.path.join(main_folder, "result", "zzz_data"))
-    data_storage_path = os.path.join(main_folder, "result", "zzz_data", "all")
-    os.makedirs(data_storage_path, exist_ok=True)
-    for file in data_storage_path:
-        shutil.copy(file, data_path)
+        txt_folder = os.path.join(data_folder, cls)
+        data_path = os.path.join(data_folder, "{}.txt".format(cls))
+        txtM = txtMerger(txt_folder, data_path)
+        txtM.run()
+        write_label(data_path, cnt)
+        cnt += 1
+    merge(data_folder)
 
 
 

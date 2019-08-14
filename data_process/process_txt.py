@@ -46,6 +46,34 @@ class txtProcessor(object):
             self.write_result()
 
 
+class txtMerger(object):
+    def __init__(self, src_folder, dest_path):
+        self.src_folder = src_folder
+        self.dest_path = dest_path
+        # self.sample_cnt = 0
+        self.content = []
+
+    def read_file(self):
+        for file_name in os.listdir(self.src_folder):
+            file = open(os.path.join(self.src_folder, file_name), "r")
+            for line in file.readlines():
+                self.content.append(line)
+            try:
+                self.content.remove('\n')
+            except ValueError:
+                pass
+            file.close()
+
+    def write_file(self):
+        data_file = open(self.dest_path, 'w')
+        for line in self.content:
+            data_file.write(line)
+
+    def run(self):
+        self.read_file()
+        self.write_file()
+
+
 class MergeAndLabel(object):
     def __init__(self, main_folder):
         self.main_folder = main_folder
@@ -101,8 +129,12 @@ class MergeAndLabel(object):
 
 
 if __name__ == '__main__':
-    txtP = txtProcessor(input_path, output_path, time_step, frame)
-    # txtP.run()
-    path = r'C:\Users\hkuit164\Desktop\AlphaPose-pytorch\temp\sport00'
-    ML = MergeAndLabel(path)
-    ML.run()
+    # txtP = txtProcessor(input_path, output_path, time_step, frame)
+    # # txtP.run()
+    # path = r'C:\Users\hkuit164\Desktop\AlphaPose-pytorch\temp\sport00'
+    # ML = MergeAndLabel(path)
+    # ML.run()
+    src = '../Data/origin'
+    dest = '../Data/origin.txt'
+    txtM = txtMerger(src, dest)
+    txtM.run()

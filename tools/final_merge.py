@@ -14,11 +14,14 @@ def division(ls):
 
 def merge_txt(txtlist, folder, name):
     for filename in txtlist:     #逐一读取需要合并的文件
-        final_path = os.path.join(folder, name + ".txt")#不同动作的文件合并进不同的最终文件中
-        final_file = open(final_path, 'a')      #将最终文件打开为追加写模式
-        for line in open(filename):
-            final_file.writelines(line)       #将源文件的每一行写入最终文件中
-        final_file.close()
+        if os.path.isdir(filename):
+            pass
+        else:
+            final_path = os.path.join(folder, name + ".txt")#不同动作的文件合并进不同的最终文件中
+            final_file = open(final_path, 'a')      #将最终文件打开为追加写模式
+            for line in open(filename):
+                final_file.writelines(line)       #将源文件的每一行写入最终文件中
+            final_file.close()
 
 
 def merge(main_folder):
