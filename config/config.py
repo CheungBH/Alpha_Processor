@@ -1,8 +1,8 @@
 import os
 
 # For video process
-action = "swimming"
-folder = ""
+action = "Swimming"
+folder = "test"
 folder_path = os.path.join('Video', action, folder)
 class_ls = os.listdir(folder_path)
 # For txt process
