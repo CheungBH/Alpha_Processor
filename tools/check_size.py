@@ -1,7 +1,10 @@
 import numpy as np
 
-txt_path = r'C:\Users\hkuit164\Desktop\golf0213_driving\36points\cmu_640x480\data_5\DFNoFinish\p1\00.txt'
+txt_path = '../data/Test_action/Test_0814/5frames_2step/all/label.txt'
 
 file_matrix = np.loadtxt(txt_path)
 print("The file has {} rows".format(file_matrix.shape[0]))
-print("Each row has {} numbers".format(file_matrix.shape[1]))
+try:
+    print("Each row has {} numbers".format(file_matrix.shape[1]))
+except IndexError:
+    print("Each row has 1 number")
