@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
         print("Begin to transfer json to normalized coordinate")
         json_path = act_VP.output_path
-        coord_path = os.path.join(json_path, "coord_file")
+        coord_path = os.path.join(json_path, "coordinate")
         os.makedirs(coord_path, exist_ok=True)
         # json to (txt)coordinate
         act_JS = JsonScanner(json_path, coord_path)
