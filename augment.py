@@ -7,7 +7,7 @@ import data_process.augment.resize as resize
 import cv2
 import os
 
-video_stored_path = "Video"
+video_stored_path = "Video/0827"
 
 
 def augment_video(path):
@@ -23,7 +23,7 @@ def augment_video(path):
         if ret:
             # writer_flip.write(img)
             cv2.imshow("origin", img)
-            cv2.imwrite(os.path.join(video_stored_path, "{}.jpg".format(cnt)), img)
+            cv2.imwrite(os.path.join(video_stored_path, "input_{}.jpg".format(cnt)), img)
 
             # img_flip = flip.flip_image(img)
             # cv2.imwrite(os.path.join(video_stored_path, "flip/{}.jpg".format(cnt)), img_flip)
@@ -94,7 +94,7 @@ def augment_image_folder(folder_path):
 
 
 if __name__ == '__main__':
-    main_folder = 'img/0826'
-    augment_image_folder(main_folder)
-
-    # augment_video("Video/origin.mp4")
+    # main_folder = 'img/0826'
+    # augment_image_folder(main_folder)
+    os.makedirs(video_stored_path, exist_ok=True)
+    augment_video("Video/origin.mp4")
