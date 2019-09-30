@@ -5,13 +5,11 @@ import keras
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-from train import ModelStorage
+from train.LSTMmodels import ModelStorage
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 
-from keras.models import model_from_json
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.callbacks import EarlyStopping,ModelCheckpoint
 import os
 from config import config
@@ -22,7 +20,28 @@ optimizer = config.optimizer
 data_path = config.data_path
 # %%
 
-def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timestep, iteration, dataInfo):
+
+def samples_to_3D_array(_vector_dim, _vectors_per_sample, _X):
+    X_len = len(_X)
+    result_array = []
+    for sample in range(0, X_len):  # should be the 311 samples?
+        sample_array = []
+        for vector_idx in range(0, _vectors_per_sample):
+            start = vector_idx * _vector_dim
+            end = start + _vector_dim
+            sample_array.append(_X[sample][start:end])
+        result_array.append(sample_array)
+    return np.asarray(result_array)
+
+
+def convert_y_to_one_hot(_y):  # one hot encoding simply means : red --> 0 , green --> 1 , blue --> 2
+    _y = np.asarray(_y, dtype=int)
+    b = np.zeros((_y.size, _y.max() + 1))
+    b[np.arange(_y.size), _y] = 1
+    return b
+
+
+def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timestep, iteration, data_info):
     timesteps = timestep
     ## POSE - val_acc: 98%
     epochs = epo
@@ -32,46 +51,24 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
     _optimizer = optimizer
     class_names = class_name  # 4 classes
     X_vector_dim = Xvector  # number of features or columns (pose)
-    samples_path = "data.txt"  # 311 files with 10 frames' human-pose estimation keypoints(10*18)
-    labels_path = "label.txt"  # 311 files' labels, 3 classes in total
+    samples_path = os.path.join(data_path, "data.txt")  # 311 files with 10 frames' human-pose estimation keypoints(10*18)
+    labels_path = os.path.join(data_path, "label.txt")  # 311 files' labels, 3 classes in total
     os.makedirs(os.path.join(data_path, str(iteration)), exist_ok=True)
-    model_path = data_path + "/" +str(iteration) + '/pose.model'
-    json_model_path = data_path + "/" + str(iteration) + '/pose_model.json'
-    model_weights_path = data_path + "/" + str(iteration) + '/pose_model.h5'
+    model_weights_path = os.path.join(data_path, str(iteration), '/pose_model.h5')
 
     X = np.loadtxt(samples_path, dtype="float")
     y = np.loadtxt(labels_path)
 
-    def samples_to_3D_array(_vector_dim, _vectors_per_sample, _X):
-        X_len = len(_X)
-        result_array = []
-        for sample in range(0, X_len):  # should be the 311 samples?
-            sample_array = []
-            for vector_idx in range(0, _vectors_per_sample):
-                start = vector_idx * _vector_dim
-                end = start + _vector_dim
-                sample_array.append(_X[sample][start:end])
-            result_array.append(sample_array)
-        return np.asarray(result_array)
-
     X_vectors_per_sample = timesteps  # number of vectors per sample , 5 samples
     X_3D = samples_to_3D_array(X_vector_dim, X_vectors_per_sample, X)
-
-    def convert_y_to_one_hot(_y):  # one hot encoding simply means : red --> 0 , green --> 1 , blue --> 2
-        _y = np.asarray(_y, dtype=int)
-        b = np.zeros((_y.size, _y.max() + 1))
-        b[np.arange(_y.size), _y] = 1
-        return b
-
     y_one_hot = convert_y_to_one_hot(y)
     y_vector_dim = y_one_hot.shape[1]
-
     X_train, X_test, y_train, y_test = train_test_split(X_3D, y_one_hot, test_size=valpercent, random_state=42)
     input_shape = (X_train.shape[1], X_train.shape[2])
 
-    model, NetworkInfo = ModelStorage.GetModel(networknum, _dropout, X_vector_dim, _activation, input_shape,
+    MS = ModelStorage(networknum, _dropout, X_vector_dim, _activation, input_shape,
                                                y_vector_dim)
-    model.compile(loss='categorical_crossentropy', optimizer=_optimizer, metrics=['accuracy'])
+    model, network_info = MS.get_model()
 
     class TrainingVisualizer(keras.callbacks.History):
         def on_epoch_end(self, epoch, logs={}):
@@ -138,11 +135,9 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
         plt.tight_layout()
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
-        if os.path.isdir("graph/Confusion_Matrix") == True:
-            pass
-        else:
-            os.makedirs("graph/Confusion_Matrix")
-        plt.savefig('graph/Confusion_Matrix/CM_' + str(iteration))
+        CM_dir = os.path.join(data_path, "graph/Confusion_Matrix")
+        os.makedirs(CM_dir, exist_ok=True)
+        plt.savefig(CM_dir + 'CM_' + str(iteration))
         plt.close()
 
     # Compute confusion matrix
@@ -153,10 +148,10 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
     plot_confusion_matrix(cnf_matrix, classes=class_names,
                           title='Confusion matrix, without normalization')
 
-    docdes = open('description.txt', 'a')
+    docdes = open(os.path.join(data_path,'description.txt'), 'a')
     docdes.write(str(iteration) + "\n")
-    docdes.write("Data source: " + dataInfo + "\n")
-    docdes.write("Network: " + NetworkInfo + "\n")
+    docdes.write("Data source: " + data_info + "\n")
+    docdes.write("Network: " + network_info + "\n")
     docdes.write("epochs: " + str(epo) + "\n")
     docdes.write("dropout: " + str(dropout) + "\n")
     docdes.write("Validation percentage: " + str(valpercent) + "\n")

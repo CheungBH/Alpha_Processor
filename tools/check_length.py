@@ -1,10 +1,21 @@
 import os
 
-file_path = '../data/Swimming/Test/5frames_2step/action1_label.txt'
-file = open(file_path, "r")
-lines = []
-for line in file.readlines():
-    lines.append(line)
-    # print(line)
-print(file_path)
-print(len(lines))
+
+def get_line(path):
+    file = open(path, "r")
+    lines = [line for line in file.readlines()]
+    return len(lines)
+
+
+def check_equal(folder):
+    data_path = os.path.join(folder, "data.txt")
+    label_path = os.path.join(folder, "label.txt")
+    if get_line(data_path) == get_line(label_path):
+        return True
+    else:
+        return False
+
+
+if __name__ == '__main__':
+    file_folder = '../network/test2'
+    print(check_equal(file_folder))

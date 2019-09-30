@@ -5,8 +5,8 @@ from data_process.process_txt import txtProcessor, txtMerger
 from tools.final_merge import merge
 from tools.label import write_label
 
-class_ls = config.class_ls
 main_folder = config.folder_path
+class_ls = os.listdir(main_folder)
 step = config.step
 frame = config.frame
 data_folder = os.path.join("data", config.action, config.folder, "{}frames_{}step".format(frame, step))
