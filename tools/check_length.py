@@ -17,5 +17,5 @@ def check_equal(folder):
 
 
 if __name__ == '__main__':
-    file_folder = '../network/test2'
+    file_folder = '../network/test3'
     print(check_equal(file_folder))

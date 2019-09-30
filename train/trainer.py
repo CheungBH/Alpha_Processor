@@ -40,10 +40,44 @@ def convert_y_to_one_hot(_y):  # one hot encoding simply means : red --> 0 , gre
     b[np.arange(_y.size), _y] = 1
     return b
 
+def plot_confusion_matrix(cm, classes, num,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    CM_dir = os.path.join(data_path, "graph/Confusion_Matrix")
+    os.makedirs(CM_dir, exist_ok=True)
+    plt.savefig(CM_dir + '/CM_' + str(num))
+    plt.close()
+
 
 def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timestep, iteration, data_info):
     timesteps = timestep
-    ## POSE - val_acc: 98%
     epochs = epo
     batch_size = batchsize
     _dropout = dropout
@@ -51,10 +85,10 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
     _optimizer = optimizer
     class_names = class_name  # 4 classes
     X_vector_dim = Xvector  # number of features or columns (pose)
-    samples_path = os.path.join(data_path, "data.txt")  # 311 files with 10 frames' human-pose estimation keypoints(10*18)
-    labels_path = os.path.join(data_path, "label.txt")  # 311 files' labels, 3 classes in total
+    samples_path = os.path.join(data_path, "data.txt")
+    labels_path = os.path.join(data_path, "label.txt")
     os.makedirs(os.path.join(data_path, str(iteration)), exist_ok=True)
-    model_weights_path = os.path.join(data_path, str(iteration), '/pose_model.h5')
+    model_weights_path = os.path.join(data_path, str(iteration), 'pose_model.h5')
 
     X = np.loadtxt(samples_path, dtype="float")
     y = np.loadtxt(labels_path)
@@ -69,6 +103,7 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
     MS = ModelStorage(networknum, _dropout, X_vector_dim, _activation, input_shape,
                                                y_vector_dim)
     model, network_info = MS.get_model()
+    model.compile(loss='categorical_crossentropy', optimizer=_optimizer, metrics=['accuracy'])
 
     class TrainingVisualizer(keras.callbacks.History):
         def on_epoch_end(self, epoch, logs={}):
@@ -76,7 +111,7 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
             IPython.display.clear_output(wait=True)
 
         # 生成TrainingVisualizer图片
-        def on_train_end(self, epoch, ogs=None):
+        def on_train_end(self, epochs, ogs=None):
             axes = pd.DataFrame(self.history).plot()
             axes.axvline(x=max((val_acc, i) for i, val_acc in enumerate(self.history['val_acc']))[1])
             os.makedirs(os.path.join(data_path, "graph/TrainingVisualizer"), exist_ok=True)
@@ -89,8 +124,9 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
     model.fit(X_train, y_train,
               batch_size=batch_size,
               epochs=epochs,
-              validation_data=(X_test, y_test),
-              callbacks=[TrainingVisualizer(), early_stopping, model_checkpoint])
+              validation_data=(X_test, y_test))
+              # ,
+              # callbacks=[TrainingVisualizer(), early_stopping, model_checkpoint])
 
     # print('early_stopping:',early_stopping)
 
@@ -105,55 +141,19 @@ def RunNetwork(epo, dropout, networknum, class_name, Xvector, valpercent, timest
 
     y_pred = model.predict(X_test)
 
-    def plot_confusion_matrix(cm, classes,
-                              normalize=False,
-                              title='Confusion matrix',
-                              cmap=plt.cm.Blues):
-
-        if normalize:
-            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-            print("Normalized confusion matrix")
-        else:
-            print('Confusion matrix, without normalization')
-
-        print(cm)
-
-        plt.imshow(cm, interpolation='nearest', cmap=cmap)
-        plt.title(title)
-        plt.colorbar()
-        tick_marks = np.arange(len(classes))
-        plt.xticks(tick_marks, classes, rotation=45)
-        plt.yticks(tick_marks, classes)
-
-        fmt = '.2f' if normalize else 'd'
-        thresh = cm.max() / 2.
-        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-            plt.text(j, i, format(cm[i, j], fmt),
-                     horizontalalignment="center",
-                     color="white" if cm[i, j] > thresh else "black")
-
-        plt.tight_layout()
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
-        CM_dir = os.path.join(data_path, "graph/Confusion_Matrix")
-        os.makedirs(CM_dir, exist_ok=True)
-        plt.savefig(CM_dir + 'CM_' + str(iteration))
-        plt.close()
-
     # Compute confusion matrix
     cnf_matrix = confusion_matrix(np.argmax(y_test, axis=1), np.argmax(y_pred, axis=1))
     np.set_printoptions(precision=2)
     # Plot non-normalized confusion matrix
     plt.figure()
-    plot_confusion_matrix(cnf_matrix, classes=class_names,
+    plot_confusion_matrix(cnf_matrix, classes=class_names, num=iteration,
                           title='Confusion matrix, without normalization')
 
     docdes = open(os.path.join(data_path,'description.txt'), 'a')
     docdes.write(str(iteration) + "\n")
-    docdes.write("Data source: " + data_info + "\n")
-    docdes.write("Network: " + network_info + "\n")
-    docdes.write("epochs: " + str(epo) + "\n")
-    docdes.write("dropout: " + str(dropout) + "\n")
-    docdes.write("Validation percentage: " + str(valpercent) + "\n")
-    docdes.write('\n')
+    docdes.write("Data source: {}\n".format(data_info))
+    docdes.write("Network: {}\n".format(network_info))
+    docdes.write("epochs: {}\n".format(epo))
+    docdes.write("dropout: {}\n".format(dropout))
+    docdes.write("Validation percentage: {}\n\n".format(dropout))
     docdes.close

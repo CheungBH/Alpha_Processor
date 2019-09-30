@@ -15,9 +15,9 @@ activation = 'relu'
 optimizer = 'Adam'
 data_path = 'network/test2'  # Where the "label.txt" and the "data.txt" stored
 
-epoch_ls = [1000]
+epoch_ls = [500]
 dropout_ls = [0.1]
-network_structure_ls = [1]
+network_structure_ls = [0]
 val_ratio_ls = [0.2]
 
 class_name = ["Backswing", "Standing", "Final", "Downswing"]
