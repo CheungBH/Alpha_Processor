@@ -1,6 +1,6 @@
 import numpy as np
 
-txt_path = '../network/test3/data.txt'
+txt_path = '../network/test4/data.txt'
 
 file_matrix = np.loadtxt(txt_path)
 print("The file has {} rows".format(file_matrix.shape[0]))
