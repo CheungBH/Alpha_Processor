@@ -24,6 +24,7 @@ if __name__ == '__main__':
         
         if not os.path.exists(coord_path):
             raise FileNotFoundError("No coordinate information exists. Please run 'video_process.py' first")
+        
         # (txt)coordinate to (txt)data
         txt_folder = os.path.join(data_folder, cls)
         act_txtP = txtProcessor(coord_path, txt_folder, step, frame)
