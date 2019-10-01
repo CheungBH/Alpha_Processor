@@ -13,7 +13,7 @@ frame = 5
 batch_size = 32
 activation = 'relu'
 optimizer = 'Adam'
-data_path = 'network/test3'  # Where the "label.txt" and the "data.txt" stored
+data_path = ''  # Where the "label.txt" and the "data.txt" stored
 
 epoch_ls = [100]
 dropout_ls = [0.1]
