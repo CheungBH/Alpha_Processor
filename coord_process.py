@@ -19,8 +19,11 @@ if __name__ == '__main__':
         action_folder = os.path.join(main_folder, cls)
         os.makedirs(data_folder, exist_ok=True)
 
-        coord_path = os.path.join(main_folder, cls, "output", "coordinate")
+        coord_path = os.path.join(main_folder, cls, "output", "coord_file")
         print("Begin to transfer coordinate into the form of input data")
+        
+        if not os.path.exists(coord_path):
+            raise FileNotFoundError("No coordinate information exists. Please run 'video_process.py' first")
         # (txt)coordinate to (txt)data
         txt_folder = os.path.join(data_folder, cls)
         act_txtP = txtProcessor(coord_path, txt_folder, step, frame)
